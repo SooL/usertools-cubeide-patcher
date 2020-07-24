@@ -64,7 +64,7 @@ class MainUI(Frame) :
 		sool_frame.grid(row=1,sticky="nsew")
 		module_frame.grid(row=2,sticky="new")
 
-		run.grid(row=3,sticky="sew")
+		run.grid(row=3,sticky="sew",pady=(5,0))
 
 		self.rowconfigure(1, weight=1)
 		for col_num in range(self.grid_size()[0]):
@@ -72,7 +72,7 @@ class MainUI(Frame) :
 		self.master.columnconfigure(0, weight=1)
 		self.master.rowconfigure(0, weight=1)
 
-		self.grid(sticky="nsew")
+		self.grid(sticky="nsew",padx=5,pady=5)
 
 
 
