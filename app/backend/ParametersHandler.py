@@ -17,6 +17,13 @@ class Parameters :
 
 		self.read_parameters()
 
+	def print(self):
+
+		print("CProject  file : ", self.cproject_path)
+		print("Sool dest path : ", self.sool_destination_path)
+		print("SooL      path : ", self.sool_path)
+		print("SooL Chip      : ", self.sool_chip)
+
 	def read_parameters(self,path = os.path.dirname(os.path.abspath(__file__)) + "/config.ini"):
 		config_parser = ConfigParser()
 		if os.path.exists(path) :
