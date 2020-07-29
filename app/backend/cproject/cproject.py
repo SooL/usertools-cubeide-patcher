@@ -1,7 +1,8 @@
 
 from .build_configuration import CProjectConfiguration
 from .build_configuration import MissingDefineSectionError
-import os
+from .build_configuration import MissingIncludeSectionError
+
 import typing as T
 import xml.etree.ElementTree as ET
 
@@ -27,18 +28,23 @@ class CProject :
 			if self.root.tag != "cproject" :
 				raise InvalidCProjectFileError()
 
-			failed_to_load_valid_conf = False
+			failed_to_load_section_error = None
 			for configuration_xml in self.root.findall("storageModule/cconfiguration") :
 				try :
 					configuration = CProjectConfiguration(configuration_xml)
-				except MissingDefineSectionError :
-					failed_to_load_valid_conf = True
+				except MissingDefineSectionError as e:
+					failed_to_load_section_error = e
+					break
+				except MissingIncludeSectionError as e:
+					failed_to_load_section_error = e
+					break
 				else:
 					self.configurations.append(configuration)
 
+
 			if len(self) == 0 :
-				if failed_to_load_valid_conf :
-					raise  MissingDefineSectionError()
+				if failed_to_load_section_error is not None :
+					raise  failed_to_load_section_error
 				else :
 					raise NoCConfigurationError()
 

@@ -1,7 +1,11 @@
 import unittest as ut
 import xml.etree.ElementTree as ET
 from .cproject import CProject, CProjectConfiguration
-from .cproject import InvalidCProjectFileError, NoCConfigurationError, MissingDefineSectionError
+from .cproject import InvalidCProjectFileError
+from .cproject import NoCConfigurationError
+from .cproject import MissingDefineSectionError
+from .cproject import MissingIncludeSectionError
+
 import os
 
 
@@ -12,11 +16,12 @@ class CProjectTestCase(ut.TestCase):
 		self.tc_invalid_cconf= f"{os.path.dirname(__file__)}/testcases/invalid/nocconf.cproject"
 		self.tc_invalid_root = f"{os.path.dirname(__file__)}/testcases/invalid/root.cproject"
 
-		# Debug has empty define section and release doesn't have any define section
 		self.tc_nodefines = f"{os.path.dirname(__file__)}/testcases/invalid/nodefinesections.cproject"
+		self.tc_noinclude = f"{os.path.dirname(__file__)}/testcases/invalid/noincludesections.cproject"
 
 		# Valid define section but empty
-		self.tc_emptydefines = f"{os.path.dirname(__file__)}/testcases/invalid/empty_cpp_defines.cproject"
+		self.tc_emptydefines  = f"{os.path.dirname(__file__)}/testcases/invalid/empty_cpp_defines.cproject"
+		self.tc_emptyincludes = f"{os.path.dirname(__file__)}/testcases/invalid/empty_cpp_includes.cproject"
 
 		self.output_tc = f"{os.path.dirname(__file__)}/testcases/out.xml"
 		if os.path.exists(self.output_tc) :
@@ -121,7 +126,6 @@ class CProjectTestCase(ut.TestCase):
 		reload.load(self.output_tc)
 		self.assertTrue(reload.isvalid)
 
-
 	def test_saved_defines(self):
 		self.cproject.load(self.tc_valid)
 		self.cproject.cleanup_defines()
@@ -171,3 +175,23 @@ class CProjectTestCase(ut.TestCase):
 		self.assertEqual([], reload["release"].cdefines)
 		self.assertEqual([], reload["release"].cppdefines)
 
+	def test_no_include_section(self):
+		with self.assertRaises(MissingIncludeSectionError) :
+			self.cproject.load(self.tc_noinclude)
+
+	def test_invalid_on_no_include_section(self):
+		try :
+			self.cproject.load(self.tc_noinclude)
+		except MissingIncludeSectionError:
+			pass
+
+		self.assertFalse(self.cproject.isvalid)
+
+	# def test_empty_include_section(self):
+	# 	self.cproject.load(self.tc_emptyincludes)
+	# 	self.assertTrue(self.cproject.isvalid)
+	# 	self.assertEqual(self.cproject["release"].cppincludes, [])
+	# 	self.assertEqual(self.cproject["debug"].cppincludes, [])
+
+	# def test_get_includes(self):
+	# 	pass
