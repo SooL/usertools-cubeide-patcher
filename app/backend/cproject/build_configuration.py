@@ -6,10 +6,14 @@ class MissingDefineSectionError(RuntimeError):
 		super().__init__(args)
 
 
+class MissingIncludeSectionError(RuntimeError):
+	def __init__(self,*args):
+		super().__init__(args)
+
 class CProjectConfiguration :
 
 	@staticmethod
-	def __extract_defines_from_node(node) -> T.List[str]:
+	def __extract_listValues_node(node) -> T.List[str]:
 		ret = list()
 		for value in node.findall("listOptionValue"):
 			ret.append(value.attrib["value"])
@@ -23,6 +27,13 @@ class CProjectConfiguration :
 
 		self.cppdefines : T.List[str]= set()
 		self.cdefines : T.List[str]= set()
+
+		self.cpcincludes_node : ET.Element = None
+		self.cincludes_node: ET.Element = None
+
+		self.cpcincludes : T.List[str]= set()
+		self.cincludes : T.List[str]= set()
+
 		self.name : str = None
 
 		self.root : ET.Element = None
@@ -36,10 +47,16 @@ class CProjectConfiguration :
 		for tool in self.root.findall("storageModule/configuration/folderInfo/toolChain/tool") :
 			if tool.attrib["id"].split('.')[-3:-1] == ["c","compiler"] :
 				self.cdefines_node = self.__get_define_node(tool)
-				self.cdefines = self.__extract_defines_from_node(self.cdefines_node)
+				self.cdefines = self.__extract_listValues_node(self.cdefines_node)
+
+				self.cincludes_node = self.__get_include_node(tool)
+				self.cincludes = self.__extract_listValues_node(self.cincludes_node)
 			elif tool.attrib["id"].split('.')[-3:-1] == ["cpp","compiler"] :
 				self.cppdefines_node = self.__get_define_node(tool)
-				self.cppdefines = self.__extract_defines_from_node(self.cppdefines_node)
+				self.cppdefines = self.__extract_listValues_node(self.cppdefines_node)
+
+				self.cppincludes_node = self.__get_include_node(tool)
+				self.cppincludes = self.__extract_listValues_node(self.cppincludes_node)
 
 	def __get_define_node(self,tool) -> ET.Element:
 		for option in tool.findall("option"):
@@ -47,6 +64,11 @@ class CProjectConfiguration :
 				return option
 		raise MissingDefineSectionError
 
+	def __get_include_node(self,tool) -> ET.Element:
+		for option in tool.findall("option"):
+			if option.attrib["id"].split(".")[-2] == "includepaths":
+				return option
+		raise MissingIncludeSectionError
 
 	def cleanup_defines(self):
 		i = 0
