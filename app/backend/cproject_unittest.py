@@ -187,11 +187,52 @@ class CProjectTestCase(ut.TestCase):
 
 		self.assertFalse(self.cproject.isvalid)
 
-	# def test_empty_include_section(self):
-	# 	self.cproject.load(self.tc_emptyincludes)
-	# 	self.assertTrue(self.cproject.isvalid)
-	# 	self.assertEqual(self.cproject["release"].cppincludes, [])
-	# 	self.assertEqual(self.cproject["debug"].cppincludes, [])
+	def test_empty_include_section(self):
+		self.cproject.load(self.tc_emptyincludes)
+		self.assertTrue(self.cproject.isvalid)
+		self.assertEqual(self.cproject["release"].cppincludes, [])
+		self.assertEqual(self.cproject["debug"].cppincludes, [])
 
-	# def test_get_includes(self):
-	# 	pass
+	def test_get_configuration_includes(self):
+		self.cproject.load(self.tc_valid)
+		self.assertTrue(self.cproject.isvalid)
+		self.assertEqual(self.cproject["release"].cincludes, ["../Inc"])
+		self.assertEqual(self.cproject["debug"].cincludes, ["../Inc"])
+
+		self.assertEqual(self.cproject["release"].cppincludes, ["../Inc"])
+		self.assertEqual(self.cproject["debug"].cppincludes, ["../Inc",'"${workspace_loc:/${ProjName}/Driver}"'])
+
+	def test_add_include(self):
+		self.cproject.load(self.tc_valid)
+		self.cproject.cleanup_includes()
+		self.cproject["debug"].add_include("_D1")
+
+		self.assertEqual(["_D1"], self.cproject["debug"].cppincludes)
+		self.assertEqual(["_D1"], self.cproject["debug"].cincludes)
+
+		self.cproject["debug"].add_cinclude("_D2")
+		self.cproject["debug"].add_cppinclude("_D3")
+		self.assertEqual(["_D1", "_D3"], self.cproject["debug"].cppincludes)
+		self.assertEqual(["_D1", "_D2"], self.cproject["debug"].cincludes)
+
+		self.assertEqual([], self.cproject["release"].cincludes)
+		self.assertEqual([], self.cproject["release"].cppincludes)
+
+	def test_saved_includes(self):
+		self.cproject.load(self.tc_valid)
+		self.cproject.cleanup_includes()
+		self.cproject["debug"].add_include("_D1")
+		self.cproject["debug"].add_cinclude("_D2")
+		self.cproject["debug"].add_cppinclude("_D3")
+
+		self.cproject.save(self.output_tc)
+
+		reload = CProject()
+		reload.load(self.output_tc)
+
+		self.assertEqual(["_D1", "_D3"], reload["debug"].cppincludes)
+		self.assertEqual(["_D1", "_D2"], reload["debug"].cincludes)
+
+		self.assertEqual([], reload["release"].cincludes)
+		self.assertEqual([], reload["release"].cppincludes)
+

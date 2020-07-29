@@ -107,5 +107,31 @@ class CProjectConfiguration :
 	def add_cdefine(self, param):
 		self.cdefines.append(param)
 
+	def clear_includes(self):
+		self.cppincludes.clear()
+		self.cincludes.clear()
+
+	def add_include(self, param):
+		self.add_cinclude(param)
+		self.add_cppinclude(param)
+
+
+	def add_cppinclude(self, param):
+		self.cppincludes.append(param)
+
+	def add_cinclude(self, param):
+		self.cincludes.append(param)
+
+	def save_includes(self):
+		for elt in list(self.cincludes_node):
+			self.cincludes_node.remove(elt)
+		for elt in list(self.cppincludes_node):
+			self.cppincludes_node.remove(elt)
+
+		for include in self.cincludes:
+			ET.SubElement(self.cincludes_node, "listOptionValue", {"builtInt": "false", "value": include})
+
+		for include in self.cppincludes:
+			ET.SubElement(self.cppincludes_node, "listOptionValue", {"builtInt": "false", "value": include})
 
 

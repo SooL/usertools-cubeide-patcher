@@ -74,15 +74,21 @@ class CProject :
 			configuration.cleanup_defines()
 			pass
 
+	def cleanup_includes(self):
+		for configuration in self:
+			configuration.clear_includes()
+
 	def save(self, output_file_path):
 		for configuration in self :
 			configuration.save_defines()
+			configuration.save_includes()
 			pass
 
 		with open(output_file_path,"wb") as out :
 			data = bytes('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n',encoding="utf-8")
 			data += ET.tostring(self.root,encoding="utf-8",xml_declaration=False)
 			out.write(data)
+
 
 	
 
