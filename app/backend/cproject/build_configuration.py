@@ -22,17 +22,19 @@ class CProjectConfiguration :
 
 	def __init__(self,root : ET.Element):
 
+		self.sources_paths : T.List[str] = list()
+		self.sources_node : ET.Element = None
 		self.cppdefines_node : ET.Element = None
 		self.cdefines_node: ET.Element = None
 
-		self.cppdefines : T.List[str]= set()
-		self.cdefines : T.List[str]= set()
+		self.cppdefines : T.List[str]= list()
+		self.cdefines : T.List[str]= list()
 
 		self.cpcincludes_node : ET.Element = None
 		self.cincludes_node: ET.Element = None
 
-		self.cpcincludes : T.List[str]= set()
-		self.cincludes : T.List[str]= set()
+		self.cpcincludes : T.List[str]= list()
+		self.cincludes : T.List[str]= list()
 
 		self.name : str = None
 
@@ -57,6 +59,13 @@ class CProjectConfiguration :
 
 				self.cppincludes_node = self.__get_include_node(tool)
 				self.cppincludes = self.__extract_listValues_node(self.cppincludes_node)
+
+		self.sources_node = self.root.find("storageModule/configuration/sourceEntries")
+		if self.sources_node is None :
+			self.sources_node = ET.SubElement(self.root.find("storageModule/configuration"),"sourceEntries")
+		for path in list(self.sources_node) :
+			self.sources_paths.append(path.attrib["name"])
+
 
 	def __get_define_node(self,tool) -> ET.Element:
 		for option in tool.findall("option"):
@@ -115,7 +124,6 @@ class CProjectConfiguration :
 		self.add_cinclude(param)
 		self.add_cppinclude(param)
 
-
 	def add_cppinclude(self, param):
 		self.cppincludes.append(param)
 
@@ -134,4 +142,15 @@ class CProjectConfiguration :
 		for include in self.cppincludes:
 			ET.SubElement(self.cppincludes_node, "listOptionValue", {"builtInt": "false", "value": include})
 
+	def clear_source_paths(self):
+		self.sources_paths.clear()
 
+	def add_source_path(self, param):
+		self.sources_paths.append(param)
+
+	def save_sourcepaths(self):
+		for elt in list(self.sources_node):
+			self.sources_node.remove(elt)
+
+		for source in self.sources_paths:
+			ET.SubElement(self.sources_node, "entry", {"flags":"VALUE_WORKSPACE_PATH|RESOLVED", "kind": "sourcePath",  "name": source})

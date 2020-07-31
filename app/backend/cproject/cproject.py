@@ -82,6 +82,7 @@ class CProject :
 		for configuration in self :
 			configuration.save_defines()
 			configuration.save_includes()
+			configuration.save_sourcepaths()
 			pass
 
 		with open(output_file_path,"wb") as out :
@@ -89,7 +90,17 @@ class CProject :
 			data += ET.tostring(self.root,encoding="utf-8",xml_declaration=False)
 			out.write(data)
 
+	def clear_paths(self):
+		for configuration in self :
+			configuration.clear_source_paths()
 
+	def add_include(self, param):
+		for configuration in self :
+			configuration.add_include(param)
+
+	def add_source_path(self, param):
+		for configuration in self:
+			configuration.add_source_path(param)
 	
 
 

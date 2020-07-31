@@ -23,7 +23,12 @@ class CProjectTestCase(ut.TestCase):
 		self.tc_emptydefines  = f"{os.path.dirname(__file__)}/testcases/invalid/empty_cpp_defines.cproject"
 		self.tc_emptyincludes = f"{os.path.dirname(__file__)}/testcases/invalid/empty_cpp_includes.cproject"
 
+		self.tc_nopaths = f"{os.path.dirname(__file__)}/testcases/invalid/nopath.cproject"
 		self.output_tc = f"{os.path.dirname(__file__)}/testcases/out.xml"
+		if os.path.exists(self.output_tc) :
+			os.remove(self.output_tc)
+
+	def tearDown(self) -> None:
 		if os.path.exists(self.output_tc) :
 			os.remove(self.output_tc)
 
@@ -236,3 +241,66 @@ class CProjectTestCase(ut.TestCase):
 		self.assertEqual([], reload["release"].cincludes)
 		self.assertEqual([], reload["release"].cppincludes)
 
+	def test_get_source_path(self):
+		self.cproject.load(self.tc_valid)
+		self.assertEqual(["Startup","Inc","Src"],self.cproject["release"].sources_paths)
+		self.assertEqual(["Startup", "Inc", "Src"], self.cproject["debug"].sources_paths)
+
+	def test_no_source_path_section(self):
+		self.cproject.load(self.tc_nopaths)
+		self.assertEqual([], self.cproject["release"].sources_paths)
+		self.assertEqual([], self.cproject["debug"].sources_paths)
+
+	def test_clear_source_paths(self):
+		self.cproject.load(self.tc_valid)
+		self.cproject["release"].clear_source_paths()
+
+		self.assertEqual([], self.cproject["release"].sources_paths)
+		self.assertEqual(["Startup","Inc","Src"], self.cproject["debug"].sources_paths)
+
+	def test_clear_all_source_path(self):
+		self.cproject.load(self.tc_valid)
+		self.cproject.clear_paths()
+
+		self.assertEqual([],self.cproject["release"].sources_paths)
+		self.assertEqual([], self.cproject["debug"].sources_paths)
+
+	def test_add_source_path(self):
+		self.cproject.load(self.tc_valid)
+		self.cproject.add_source_path("T")
+		self.cproject["release"].add_source_path("S1")
+		self.cproject["debug"].add_source_path("S2")
+
+		self.assertEqual(["Startup","Inc","Src","T","S1"],self.cproject["release"].sources_paths)
+		self.assertEqual(["Startup","Inc","Src","T","S2"], self.cproject["debug"].sources_paths)
+
+
+	def test_save_source_paths(self):
+		self.cproject.load(self.tc_valid)
+		self.cproject.clear_paths()
+
+		self.cproject.add_source_path("T1")
+		self.cproject["release"].add_source_path("TR")
+		self.cproject["debug"].add_source_path("TD")
+
+		self.cproject.save(self.output_tc)
+		reload = CProject()
+		reload.load(self.output_tc)
+
+		self.assertEqual(["T1","TR"], reload["release"].sources_paths)
+		self.assertEqual(["T1", "TD"], reload["debug"].sources_paths)
+
+	def test_save_source_paths_no_section(self):
+		self.cproject.load(self.tc_nopaths)
+		self.cproject.clear_paths()
+
+		self.cproject.add_source_path("T1")
+		self.cproject["release"].add_source_path("TR")
+		self.cproject["debug"].add_source_path("TD")
+
+		self.cproject.save(self.output_tc)
+		reload = CProject()
+		reload.load(self.output_tc)
+
+		self.assertEqual(["T1","TR"], reload["release"].sources_paths)
+		self.assertEqual(["T1", "TD"], reload["debug"].sources_paths)
