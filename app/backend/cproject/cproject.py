@@ -22,7 +22,7 @@ class CProject :
 		self.root : ET.Element = None
 		self.isvalid = False
 
-	def load(self, filepath):
+	def load(self, filepath : str):
 		with open(filepath,"r") as xml_file :
 			self.root = ET.fromstring(xml_file.read())
 			if self.root.tag != "cproject" :
@@ -86,7 +86,7 @@ class CProject :
 			pass
 
 		with open(output_file_path,"wb") as out :
-			data = bytes('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n',encoding="utf-8")
+			data = bytes('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<?fileVersion 4.0.0?>\n',encoding="utf-8")
 			data += ET.tostring(self.root,encoding="utf-8",xml_declaration=False)
 			out.write(data)
 
@@ -101,6 +101,19 @@ class CProject :
 	def add_source_path(self, param):
 		for configuration in self:
 			configuration.add_source_path(param)
+
+	def add_define(self, chip):
+		for configuration in self:
+			configuration.add_define(chip)
+
+	def add_cdefine(self, chip):
+		for configuration in self:
+			configuration.add_cdefine(chip)
+
+	def add_cppdefine(self, chip):
+		for configuration in self:
+			configuration.add_cppdefine(chip)
+
 	
 
 

@@ -3,7 +3,7 @@ from tkinter.ttk import *
 from tkinter import filedialog
 
 from .backend import Parameters
-
+from .backend import Patcher
 from .tk_browse_field import BrowseField
 from .tk_labeled_input import LabeledInput
 
@@ -37,22 +37,26 @@ class MainUI(Frame) :
 
 		self.sool_chip_treeview = Treeview(sool_frame,selectmode="browse",height=5)
 		self.sool_chip_treeview.heading("#0", text="SooL Chip Define")
+		self.sool_chip_treeview.bind("<ButtonRelease-1>",self.on_chip_select)
+
+		sool_selected_chip = LabeledInput("Chip : ",self.params.var_sool_chip,sool_frame)
 
 		module_frame = LabelFrame(self,text="Modules parameters")
 		sool_module = BrowseField("Modules Root : ", self.params.var_sool_module_path, self.browse_modules, module_frame)
 		use_io_module_checkbox = Checkbutton(module_frame,text="Use IO module",variable=self.params.var_use_io_module)
 		use_os_module_checkbox = Checkbutton(module_frame, text="Use OS module", variable=self.params.var_use_os_module)
 
-		run = Button(self,text="Put some SooL into my project !")
+		run = Button(self,text="Put some SooL into my project !",command=self.on_run)
 		# Project packing
 		project_root.pack(expand=TRUE,fill=X,side=TOP)
 		project_sool_path.pack(expand=TRUE,fill=X,side=TOP)
 		cleanup_debug_symbols_checkbox.pack(expand=TRUE,fill=X, side=TOP)
-		use_links_checkbox.pack(expand=TRUE,fill=X, side=TOP)
+		# use_links_checkbox.pack(expand=TRUE,fill=X, side=TOP)
 
 		#Sool Packing
 		sool_root.pack(fill=X,side=TOP)
 		self.sool_chip_treeview.pack(fill=BOTH,side=TOP,expand=TRUE)
+		sool_selected_chip.pack(fill=X,side=TOP)
 		# generate_unified_includes_checkbox.pack(fill=X,side=TOP)
 
 		#Module Packing
@@ -62,7 +66,7 @@ class MainUI(Frame) :
 
 		project_frame.grid(row=0,sticky="new")
 		sool_frame.grid(row=1,sticky="nsew")
-		module_frame.grid(row=2,sticky="new")
+		#module_frame.grid(row=2,sticky="new")
 
 		run.grid(row=3,sticky="sew",pady=(5,0))
 
@@ -81,7 +85,7 @@ class MainUI(Frame) :
 			self.load_manifest(f"{self.params.sool_path}/manifest.xml")
 
 	def browse_CProjectFile(self,thinggy=None):
-		filename = filedialog.askopenfilename(filetypes=("CProject file",".cproject"))
+		filename = filedialog.askopenfilename(filetypes=[("CProject file","*cproject"),("All files","*.*")])
 		if len(filename) and os.path.exists(filename) :
 			self.params.cproject_path = filename
 
@@ -118,3 +122,13 @@ class MainUI(Frame) :
 	def on_close(self, *args):
 		self.params.write_parameters()
 		self.master.destroy()
+
+	def on_chip_select(self,event):
+		if len(self.sool_chip_treeview.selection()) > 0 :
+			chipname = self.sool_chip_treeview.item(self.sool_chip_treeview.selection()[0])["text"]
+			if len(chipname) > 8 :
+				self.params.sool_chip = chipname
+
+	def on_run(self,thinggy=None):
+		patcher = Patcher(self.params)
+		patcher.run()

@@ -63,6 +63,14 @@ class Parameters :
 			config_parser.write(f)
 
 	@property
+	def project_dir(self) -> str:
+		return os.path.dirname(self.cproject_path)
+
+	@property
+	def project_sool_dir(self) -> str:
+		return os.path.abspath(f"{self.project_dir}/{self.sool_destination_path}")
+
+	@property
 	def use_io_module(self) -> bool:
 		return self.var_use_io_module.get()
 
