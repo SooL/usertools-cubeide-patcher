@@ -20,6 +20,7 @@ class ProjectTestCase(ut.TestCase):
 		self.tc_no_c_nature = f"{os.path.dirname(__file__)}/testcases/invalid/noc.project"
 		self.tc_no_cpp_nature = f"{os.path.dirname(__file__)}/testcases/invalid/nocpp.project"
 		self.tc_no_mcu_nature = f"{os.path.dirname(__file__)}/testcases/invalid/nomcu.project"
+		self.tc_no_rsc = f"{os.path.dirname(__file__)}/testcases/invalid/norsc.project"
 
 
 		self.output_tc = f"{os.path.dirname(__file__)}/testcases/out.project"
@@ -129,6 +130,21 @@ class ProjectTestCase(ut.TestCase):
 
 	def test_save_xml_ressources(self):
 		self.project.load(self.tc_valid)
+		self.project.add_resource(ProjectRessource("/fs/path","test",ProjectRessource.FOLDER))
+		self.project.save(self.output_tc)
+
+		reload = Project()
+		reload.load(self.output_tc)
+
+		self.assertEqual("/fs/path",reload.ressources["test"].location)
+		self.assertEqual("test", reload.ressources["test"].project_path)
+		self.assertEqual(ProjectRessource.FOLDER, reload.ressources["test"].type)
+
+	def test_open_no_rsc(self):
+		self.project.load(self.tc_no_rsc)
+
+	def test_save_when_no_rsc_initial(self):
+		self.project.load(self.tc_no_rsc)
 		self.project.add_resource(ProjectRessource("/fs/path","test",ProjectRessource.FOLDER))
 		self.project.save(self.output_tc)
 

@@ -94,11 +94,11 @@ class Parameters :
 
 	@property
 	def use_links(self) -> bool:
-		return self.var_use_os_module.get()
+		return self.var_use_links.get()
 
 	@use_links.setter
 	def use_links(self, val: bool):
-		self.var_use_os_module.set(val)
+		self.var_use_links.set(val)
 		
 	@property
 	def cleanup_debug_symbols(self) -> bool:
@@ -119,6 +119,11 @@ class Parameters :
 	@property
 	def cproject_path(self) -> str:
 		return self.var_cproject_path.get() + "/.cproject"
+
+	@property
+	def project_path(self) -> str:
+		return self.var_cproject_path.get() + "/.project"
+
 
 	@cproject_path.setter
 	def cproject_path(self, val: str):

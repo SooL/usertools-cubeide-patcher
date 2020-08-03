@@ -54,7 +54,7 @@ class MainUI(Frame) :
 		project_root.pack(expand=TRUE,fill=X,side=TOP)
 		project_sool_path.pack(expand=TRUE,fill=X,side=TOP)
 		cleanup_debug_symbols_checkbox.pack(expand=TRUE,fill=X, side=TOP)
-		# use_links_checkbox.pack(expand=TRUE,fill=X, side=TOP)
+		use_links_checkbox.pack(expand=TRUE,fill=X, side=TOP)
 		replace_main_checkbox.pack(expand=TRUE, fill=X, side=TOP)
 
 		#Sool Packing

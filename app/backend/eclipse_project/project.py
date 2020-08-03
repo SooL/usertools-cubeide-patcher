@@ -51,7 +51,8 @@ class Project:
 
 	def save_ressources(self):
 		linked_section = self.root.find("linkedResources")
-
+		if linked_section is None :
+			linked_section = ET.SubElement(self.root,"linkedResources")
 		for link in list(linked_section) :
 			linked_section.remove(link)
 		for link in self.ressources.values() :
