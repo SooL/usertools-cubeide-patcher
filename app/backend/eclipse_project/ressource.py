@@ -18,7 +18,7 @@ class ProjectRessource:
 	@classmethod
 	def from_xml(cls, root : ET.Element):
 		if not root.tag == "link" :
-			raise RuntimeError("Invalid type of root element")
+			raise RuntimeError(f"Invalid type of root element {root.tag}")
 		project_loc = root.find("name").text
 		rsc_type = int(root.find("type").text)
 		location = root.find("locationURI").text

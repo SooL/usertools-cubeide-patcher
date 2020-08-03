@@ -94,12 +94,47 @@ class ProjectTestCase(ut.TestCase):
 		self.assertEqual(ProjectRessource.FOLDER,ressource.type)
 		self.assertEqual("test",ressource.project_path)
 
-	def test_to_xml(self):
+	def test_ressource_to_xml(self):
 		r = ProjectRessource(self.tc_valid, "foo.bar")
 		root = r.to_xml()
 		r2 = ProjectRessource.from_xml(root)
 
-		self.assertEquals(r.location,r2.location)
-		self.assertEquals(r.project_path,r2.project_path)
-		self.assertEquals(r.type,r2.type)
+		self.assertEqual(r.location,r2.location)
+		self.assertEqual(r.project_path,r2.project_path)
+		self.assertEqual(r.type,r2.type)
 
+	def test_list_ressources(self):
+		self.project.load(self.tc_valid)
+		self.assertEqual(1,len(self.project.ressources))
+
+		self.assertEqual("Drivers/sool", self.project.ressources["Drivers/sool"].project_path)
+		self.assertEqual(ProjectRessource.FOLDER, self.project.ressources["Drivers/sool"].type)
+		self.assertEqual("PARENT-2-PROJECT_LOC/sool-main/release/sool", self.project.ressources["Drivers/sool"].location)
+
+	def test_write_xml_equal(self):
+		self.project.load(self.tc_valid)
+		self.project.save(self.output_tc)
+
+		with open(self.output_tc,"r",encoding="utf-8") as xml :
+			self.assertEqual(ET.canonicalize(ET.tostring(self.project.root)),ET.canonicalize(xml.read()))
+
+	def test_add_xml_ressources(self):
+		self.project.load(self.tc_valid)
+		r = ProjectRessource("/fs/path","test",ProjectRessource.FOLDER)
+
+		self.project.add_resource(r)
+		self.assertEqual("/fs/path", self.project.ressources["test"].location)
+		self.assertEqual("test", self.project.ressources["test"].project_path)
+		self.assertEqual(ProjectRessource.FOLDER, self.project.ressources["test"].type)
+
+	def test_save_xml_ressources(self):
+		self.project.load(self.tc_valid)
+		self.project.add_resource(ProjectRessource("/fs/path","test",ProjectRessource.FOLDER))
+		self.project.save(self.output_tc)
+
+		reload = Project()
+		reload.load(self.output_tc)
+
+		self.assertEqual("/fs/path",reload.ressources["test"].location)
+		self.assertEqual("test", reload.ressources["test"].project_path)
+		self.assertEqual(ProjectRessource.FOLDER, reload.ressources["test"].type)
