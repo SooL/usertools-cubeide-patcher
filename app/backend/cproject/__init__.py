@@ -5,3 +5,5 @@ from .cproject import CProject
 from .build_configuration import CProjectConfiguration
 from .build_configuration import MissingDefineSectionError
 from .build_configuration import MissingIncludeSectionError
+
+from .source_path import SourcePath

@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as ET
 import typing as T
 
+from .source_path import SourcePath
+
 class MissingDefineSectionError(RuntimeError):
 	def __init__(self,*args):
 		super().__init__(args)
@@ -22,7 +24,7 @@ class CProjectConfiguration :
 
 	def __init__(self,root : ET.Element):
 
-		self.sources_paths : T.List[str] = list()
+		self.sources_paths : T.List[SourcePath] = list()
 		self.sources_node : ET.Element = None
 		self.cppdefines_node : ET.Element = None
 		self.cdefines_node: ET.Element = None
@@ -63,8 +65,8 @@ class CProjectConfiguration :
 		self.sources_node = self.root.find("storageModule/configuration/sourceEntries")
 		if self.sources_node is None :
 			self.sources_node = ET.SubElement(self.root.find("storageModule/configuration"),"sourceEntries")
-		for path in list(self.sources_node) :
-			self.sources_paths.append(path.attrib["name"])
+		for entry in list(self.sources_node) :
+			self.sources_paths.append(SourcePath.from_xml(entry))
 
 
 	def __get_define_node(self,tool) -> ET.Element:
@@ -145,12 +147,13 @@ class CProjectConfiguration :
 	def clear_source_paths(self):
 		self.sources_paths.clear()
 
-	def add_source_path(self, param):
-		self.sources_paths.append(param)
+	def add_source_path(self, param, resolved=True):
+		self.sources_paths.append(SourcePath(param,resolved))
 
 	def save_sourcepaths(self):
 		for elt in list(self.sources_node):
 			self.sources_node.remove(elt)
 
 		for source in self.sources_paths:
-			ET.SubElement(self.sources_node, "entry", {"flags":"VALUE_WORKSPACE_PATH|RESOLVED", "kind": "sourcePath",  "name": source})
+			self.sources_node.append(source.to_xml())
+

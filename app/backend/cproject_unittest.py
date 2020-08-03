@@ -5,7 +5,7 @@ from .cproject import InvalidCProjectFileError
 from .cproject import NoCConfigurationError
 from .cproject import MissingDefineSectionError
 from .cproject import MissingIncludeSectionError
-
+from .cproject import SourcePath
 import os
 
 
@@ -304,3 +304,11 @@ class CProjectTestCase(ut.TestCase):
 
 		self.assertEqual(["T1","TR"], reload["release"].sources_paths)
 		self.assertEqual(["T1", "TD"], reload["debug"].sources_paths)
+
+	def test_source_path(self):
+		sp = SourcePath("test")
+		self.assertEqual(b'<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="test" />',ET.tostring(sp.to_xml()))
+
+	def test_source_path_unresolved(self):
+		sp = SourcePath("test",False)
+		self.assertEqual(b'<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="test" />', ET.tostring(sp.to_xml()))

@@ -100,9 +100,9 @@ class CProject :
 		for configuration in self :
 			configuration.add_include(param)
 
-	def add_source_path(self, param):
+	def add_source_path(self, param, resolved = True):
 		for configuration in self:
-			configuration.add_source_path(param)
+			configuration.add_source_path(param, resolved)
 
 	def add_define(self, chip):
 		for configuration in self:
