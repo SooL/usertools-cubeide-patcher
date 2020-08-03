@@ -3,7 +3,25 @@ from .cproject import CProject
 import shutil
 import os
 
+main_content = """
+#include <sool_setup.h>
+#include <GPIO.h>
 
+int main(void)
+{
+	using namespace sool::core;
+	GPIOA->enable_clock();
+
+	PA3 = GPIO::Mode::Output | GPIO::OutType::PushPull;
+
+	for(;;)
+	{
+		for(int i = 0; i < 50000; i++)
+			asm("nop");
+		PA3.toggle();
+	}
+}
+"""
 
 class Patcher():
 	def __init__(self, params : Parameters):
@@ -17,7 +35,7 @@ class Patcher():
 		print("\tCreating backup")
 		shutil.copy2(self.params.cproject_path, f"{self.params.cproject_path}.bak")
 		print("\tLoading CProject file")
-		self.project_file.load(self.params.cproject_path)
+		self.project_file.load(f"{self.params.cproject_path}")
 
 	def handle_defines(self):
 		print("Editing defines...")
@@ -64,3 +82,14 @@ class Patcher():
 		print("Writing destination file...")
 		self.project_file.save(self.params.cproject_path)
 
+		print("Finalizing...")
+		self.finalize_fileset()
+		print("Done !")
+
+	def finalize_fileset(self):
+		if self.params.replace_main :
+			print("\tReplace main.c...")
+			if os.path.exists(f"{self.params.project_dir}/Src/main.c") :
+				os.remove(f"{self.params.project_dir}/Src/main.c")
+				with open(f"{self.params.project_dir}/Src/main.cpp","w") as main_file :
+					main_file.write(main_content)

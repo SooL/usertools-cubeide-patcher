@@ -1,6 +1,8 @@
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import filedialog
+from tkinter import messagebox
+
 
 from .backend import Parameters
 from .backend import Patcher
@@ -27,10 +29,11 @@ class MainUI(Frame) :
 	def build_ui(self):
 		self.project_root = StringVar(self)
 		project_frame = LabelFrame(self,text="Project parameters")
-		project_root = BrowseField("CProject file : ",self.params.var_cproject_path,self.browse_CProjectFile,project_frame)
+		project_root = BrowseField("Project folder : ",self.params.var_cproject_path,self.browse_CProjectFile,project_frame)
 		project_sool_path = LabeledInput("SooL destination : ", self.params.var_sool_destination_path,project_frame)
 		cleanup_debug_symbols_checkbox = Checkbutton(project_frame, text="Perform cleanup on debug symbols",variable=self.params.var_cleanup_debug_symbols)
 		use_links_checkbox = Checkbutton(project_frame, text="Use links instead of hardcopy", variable=self.params.var_use_links)
+		replace_main_checkbox = Checkbutton(project_frame, text="Replace \"main.c\" by a demo file \"main.cpp\"", variable=self.params.var_replace_main)
 
 		sool_frame = LabelFrame(self,text="SooL parameters")
 		sool_root = BrowseField("Sool Root : ",self.params.var_sool_path,self.browse_sool,sool_frame, on_edit=self.on_sool_path_change)
@@ -52,6 +55,7 @@ class MainUI(Frame) :
 		project_sool_path.pack(expand=TRUE,fill=X,side=TOP)
 		cleanup_debug_symbols_checkbox.pack(expand=TRUE,fill=X, side=TOP)
 		# use_links_checkbox.pack(expand=TRUE,fill=X, side=TOP)
+		replace_main_checkbox.pack(expand=TRUE, fill=X, side=TOP)
 
 		#Sool Packing
 		sool_root.pack(fill=X,side=TOP)
@@ -85,9 +89,13 @@ class MainUI(Frame) :
 			self.load_manifest(f"{self.params.sool_path}/manifest.xml")
 
 	def browse_CProjectFile(self,thinggy=None):
-		filename = filedialog.askopenfilename(filetypes=[("CProject file","*cproject"),("All files","*.*")])
-		if len(filename) and os.path.exists(filename) :
-			self.params.cproject_path = filename
+		path = filedialog.askdirectory()
+		if len(path) and os.path.exists(path) :
+			if not os.path.exists(f"{path}/.cproject") :
+				messagebox.showerror("CProject not found","The .cproject file was not found in the given filder.\n"
+														  "Are you sure this is a proper STM32 Project ?")
+			else :
+				self.params.cproject_path = f"{path}"
 
 	def browse_sool(self,thinggy=None):
 		path = filedialog.askdirectory()
@@ -131,4 +139,11 @@ class MainUI(Frame) :
 
 	def on_run(self,thinggy=None):
 		patcher = Patcher(self.params)
-		patcher.run()
+		try:
+			patcher.run()
+		except Exception as e :
+			messagebox.showerror("Error","An unexpected error occured while patching:\n"
+								 f"Error {sys.exc_info()[0]}")
+			raise e
+		else:
+			messagebox.showinfo("SooL Patcher","Patching done !")

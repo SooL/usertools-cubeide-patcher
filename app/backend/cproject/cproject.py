@@ -5,7 +5,7 @@ from .build_configuration import MissingIncludeSectionError
 
 import typing as T
 import xml.etree.ElementTree as ET
-
+import os
 
 class InvalidCProjectFileError(RuntimeError):
 	def __init__(self,*args):
@@ -23,6 +23,8 @@ class CProject :
 		self.isvalid = False
 
 	def load(self, filepath : str):
+		if not (os.path.exists(filepath) and not os.path.isdir(filepath)) :
+			raise FileNotFoundError(f"{filepath} in valid .cproject file")
 		with open(filepath,"r") as xml_file :
 			self.root = ET.fromstring(xml_file.read())
 			if self.root.tag != "cproject" :

@@ -8,6 +8,7 @@ class Parameters :
 		self.var_use_os_module = BooleanVar(master,False)
 		self.var_cleanup_debug_symbols = BooleanVar(master,True)
 		self.var_use_links = BooleanVar(master,False)
+		self.var_replace_main = BooleanVar(master,False)
 
 		self.var_cproject_path = StringVar(master,None)
 		self.var_sool_destination_path = StringVar(master,None)
@@ -31,8 +32,10 @@ class Parameters :
 
 		self.use_io_module = config_parser.getboolean("Modules","IO",fallback=False)
 		self.use_os_module = config_parser.getboolean("Modules","OS", fallback=False)
+
 		self.cleanup_debug_symbols = config_parser.getboolean("General","CleanupSymbols", fallback=True)
 		self.use_links = config_parser.getboolean("General","UseLinks",fallback=False)
+		self.replace_main = config_parser.getboolean("General","ReplaceMain",fallback=True)
 
 		self.cproject_path = config_parser.get("Paths","CProject",fallback="")
 		self.sool_destination_path = config_parser.get("Paths","SoolDestination", fallback="./sool")
@@ -50,10 +53,13 @@ class Parameters :
 
 		config_parser.set("Modules","IO", 				str(self.use_io_module))
 		config_parser.set("Modules","OS", 				str(self.use_os_module))
+
 		config_parser.set("General","CleanupSymbols", 	str(self.cleanup_debug_symbols))
 		config_parser.set("General","UseLinks",			str(self.use_links))
+		config_parser.set("General","ReplaceMain",		str(self.replace_main))
 
-		config_parser.set("Paths","CProject",			self.cproject_path)
+		config_parser.set("Paths","CProject",			self.var_cproject_path.get())
+
 		config_parser.set("Paths","SoolDestination", 	self.sool_destination_path)
 		config_parser.set("Paths","SoolSource", 		self.sool_path)
 		config_parser.set("SooL","Chip", 				self.sool_chip)
@@ -103,8 +109,16 @@ class Parameters :
 		self.var_cleanup_debug_symbols.set(val)
 
 	@property
+	def replace_main(self) -> bool:
+		return self.var_replace_main.get()
+
+	@replace_main.setter
+	def replace_main(self,val : bool):
+		self.var_replace_main.set(val)
+
+	@property
 	def cproject_path(self) -> str:
-		return self.var_cproject_path.get()
+		return self.var_cproject_path.get() + "/.cproject"
 
 	@cproject_path.setter
 	def cproject_path(self, val: str):
