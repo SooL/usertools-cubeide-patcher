@@ -16,6 +16,7 @@ class ProjectTestCase(ut.TestCase):
 	def setUp(self):
 		self.project = Project()
 		self.tc_valid = f"{os.path.dirname(__file__)}/testcases/valid.project"
+		self.tc_valid_abs = f"{os.path.dirname(__file__)}/testcases/valid_absolute.project"
 
 		self.tc_no_c_nature = f"{os.path.dirname(__file__)}/testcases/invalid/noc.project"
 		self.tc_no_cpp_nature = f"{os.path.dirname(__file__)}/testcases/invalid/nocpp.project"
@@ -154,3 +155,6 @@ class ProjectTestCase(ut.TestCase):
 		self.assertEqual("/fs/path",reload.ressources["test"].location)
 		self.assertEqual("test", reload.ressources["test"].project_path)
 		self.assertEqual(ProjectRessource.FOLDER, reload.ressources["test"].type)
+
+	def test_load_absolute_rst(self):
+		self.project.load(self.tc_valid_abs)

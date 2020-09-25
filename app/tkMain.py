@@ -143,7 +143,7 @@ class MainUI(Frame) :
 			patcher.run()
 		except Exception as e :
 			messagebox.showerror("Error","An unexpected error occured while patching:\n"
-								 f"Error {sys.exc_info()[0]}")
+								 f"Error {e.__cause__}")
 			raise e
 		else:
 			messagebox.showinfo("SooL Patcher","Patching done !")

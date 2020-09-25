@@ -3,7 +3,7 @@ from configparser import ConfigParser
 import os
 
 class Parameters :
-	def __init__(self, master):
+	def __init__(self, master = None):
 		self.var_use_io_module = BooleanVar(master,False)
 		self.var_use_os_module = BooleanVar(master,False)
 		self.var_cleanup_debug_symbols = BooleanVar(master,True)
