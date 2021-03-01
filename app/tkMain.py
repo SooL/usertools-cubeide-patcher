@@ -49,6 +49,7 @@ class MainUI(Frame) :
 		module_frame = LabelFrame(self,text="Modules")
 		label_module = Label(module_frame,text="Available modules")
 		self.modules_lists = Listbox(module_frame,selectmode="multiple")
+		self.modules_lists.bind("<ButtonRelease-1>", self.on_module_select)
 		self.add_module_button = Button(module_frame,text="Register a new module",command=self.register_module)
 
 		run = Button(self,text="Put some SooL into my project !",command=self.on_run)
@@ -84,7 +85,8 @@ class MainUI(Frame) :
 
 		self.grid(sticky="nsew",padx=5,pady=5)
 
-		self.update_modules_list()
+		self.modules_params_to_screen()
+		self.selected_modules_to_screen()
 
 
 	def register_module(self, thinggy=None):
@@ -97,20 +99,39 @@ class MainUI(Frame) :
 			self.update_modules_list()
 
 	def update_modules_list(self):
-		selected_index = self.modules_lists.curselection()
-		selected_modules_names = [self.modules_lists.get(0,'end')[x] for x in selected_index]
-		self.params.modules_list = sorted(self.params.modules_list,key=lambda x : x.name)
-		still_valid_selected = set(selected_modules_names) & set([x.name for x in self.params.modules_list])
+		self.selected_modules_from_screen()
+		self.modules_params_to_screen()
+		self.selected_modules_to_screen()
+
+	def modules_params_to_screen(self):
+		self.params.modules_list = sorted(self.params.modules_list, key=lambda x: x.name)
+		# still_valid_selected = set(selected_modules_names) & set([x.name for x in self.params.modules_list])
 		new_list = sorted([x.name for x in self.params.modules_list])
+		self.modules_lists.selection_clear(0, 'end')
+		self.modules_lists.delete(0, 'end')
+		for e in new_list:
+			self.modules_lists.insert('end', e)
+
+	# indexes = [new_list.index(x) for x in list(still_valid_selected)]
+		# for i in indexes :
+		# 	self.modules_lists.selection_set(i)
+
+	def on_module_select(self,thinggy=None):
+		self.selected_modules_from_screen()
+
+	def selected_modules_to_screen(self):
+		self.modules_params_to_screen()
 		self.modules_lists.selection_clear(0,'end')
-		self.modules_lists.delete(0,'end')
-		for e in new_list :
-			self.modules_lists.insert('end',e)
-		indexes = [new_list.index(x) for x in list(still_valid_selected)]
+		modules_names = [x.name for x in self.params.modules_list]
+		indexes = [modules_names.index(x.name) for x in self.params.modules_selected_list]
 		for i in indexes :
 			self.modules_lists.selection_set(i)
 
-
+	def selected_modules_from_screen(self):
+		selected_index = self.modules_lists.curselection()
+		selected_modules_names = [self.modules_lists.get(0, 'end')[x] for x in selected_index]
+		self.params.modules_selected_list.clear()
+		self.params.modules_selected_list = [x for x in self.params.modules_list if x.name in selected_modules_names]
 
 	def sync_fields(self):
 		if self.params.sool_path != "" :
@@ -119,7 +140,6 @@ class MainUI(Frame) :
 	def browse_CProjectFile(self,thinggy=None):
 		path = filedialog.askopenfilename(title="Select the CProject file for your project", filetypes=(("Project file",".cproject"),("All files","*.*")))
 		path = os.path.dirname(path)
-		#path = filedialog.askdirectory()
 		if len(path) and os.path.exists(path) :
 			if not os.path.exists(f"{path}/.cproject") :
 				messagebox.showerror("CProject not found","The .cproject file was not found in the given filder.\n"

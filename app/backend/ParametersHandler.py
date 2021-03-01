@@ -45,9 +45,11 @@ class Parameters :
 		self.sool_path = config_parser.get("Paths","SoolSource", fallback="")
 		self.sool_chip = config_parser.get("SooL","Chip", fallback="")
 		self.modules_list = [ModuleManifest(x) for x in config_parser.get("Paths","SoolModules", fallback="").split(";") if os.path.exists(x) and os.path.isfile(x)]
+		self.modules_selected_list = [ModuleManifest(x) for x in config_parser.get("Paths", "SoolModulesUsed", fallback="").split(";") if os.path.exists(x) and os.path.isfile(x)]
 
 		for module in self.modules_list :
-
+			module.read()
+		for module in self.modules_selected_list :
 			module.read()
 
 
@@ -73,6 +75,7 @@ class Parameters :
 		config_parser.set("Paths","SoolSource", 		self.sool_path)
 		config_parser.set("SooL","Chip", 				self.sool_chip)
 		config_parser.set("Paths","SoolModules", 		";".join([x.path for x in self.modules_list]))
+		config_parser.set("Paths","SoolModulesUsed",	";".join([x.path for x in self.modules_selected_list]))
 
 		with open(path,"w") as f :
 			config_parser.write(f)
