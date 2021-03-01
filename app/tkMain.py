@@ -6,6 +6,7 @@ from tkinter import messagebox
 
 from .backend import Parameters
 from .backend import Patcher
+from .backend.module_manifest import ModuleManifest
 from .tk_browse_field import BrowseField
 from .tk_labeled_input import LabeledInput
 
@@ -44,10 +45,11 @@ class MainUI(Frame) :
 
 		sool_selected_chip = LabeledInput("Chip : ",self.params.var_sool_chip,sool_frame)
 
-		module_frame = LabelFrame(self,text="Modules parameters")
-		sool_module = BrowseField("Modules Root : ", self.params.var_sool_module_path, self.browse_modules, module_frame)
-		use_io_module_checkbox = Checkbutton(module_frame,text="Use IO module",variable=self.params.var_use_io_module)
-		use_os_module_checkbox = Checkbutton(module_frame, text="Use OS module", variable=self.params.var_use_os_module)
+		# Modules definitions
+		module_frame = LabelFrame(self,text="Modules")
+		label_module = Label(module_frame,text="Available modules")
+		self.modules_lists = Listbox(module_frame,selectmode="multiple")
+		self.add_module_button = Button(module_frame,text="Register a new module",command=self.register_module)
 
 		run = Button(self,text="Put some SooL into my project !",command=self.on_run)
 		# Project packing
@@ -64,13 +66,13 @@ class MainUI(Frame) :
 		# generate_unified_includes_checkbox.pack(fill=X,side=TOP)
 
 		#Module Packing
-		sool_module.pack(fill=X, side=TOP)
-		use_io_module_checkbox.pack(fill=X,side=TOP)
-		use_os_module_checkbox.pack(fill=X,side=TOP)
+		label_module.pack(fill=X,side=TOP)
+		self.modules_lists.pack(fill=X,side=TOP)
+		self.add_module_button.pack(fill=X,side=TOP)
 
 		project_frame.grid(row=0,sticky="new")
 		sool_frame.grid(row=1,sticky="nsew")
-		#module_frame.grid(row=2,sticky="new")
+		module_frame.grid(row=2,sticky="new")
 
 		run.grid(row=3,sticky="sew",pady=(5,0))
 
@@ -82,6 +84,32 @@ class MainUI(Frame) :
 
 		self.grid(sticky="nsew",padx=5,pady=5)
 
+		self.update_modules_list()
+
+
+	def register_module(self, thinggy=None):
+		path = filedialog.askopenfilename(title="Select the manifest for your module",
+										  filetypes=(("Project file", "manifest.xml"), ("XML file","*.xml"),("All files", "*.*")))
+		if os.path.exists(path) :
+			new_mod = ModuleManifest(path)
+			new_mod.read()
+			self.params.modules_list.append(new_mod)
+			self.update_modules_list()
+
+	def update_modules_list(self):
+		selected_index = self.modules_lists.curselection()
+		selected_modules_names = [self.modules_lists.get(0,'end')[x] for x in selected_index]
+		self.params.modules_list = sorted(self.params.modules_list,key=lambda x : x.name)
+		still_valid_selected = set(selected_modules_names) & set([x.name for x in self.params.modules_list])
+		new_list = sorted([x.name for x in self.params.modules_list])
+		self.modules_lists.selection_clear(0,'end')
+		self.modules_lists.delete(0,'end')
+		for e in new_list :
+			self.modules_lists.insert('end',e)
+		indexes = [new_list.index(x) for x in list(still_valid_selected)]
+		for i in indexes :
+			self.modules_lists.selection_set(i)
+
 
 
 	def sync_fields(self):
@@ -89,7 +117,9 @@ class MainUI(Frame) :
 			self.load_manifest(f"{self.params.sool_path}/manifest.xml")
 
 	def browse_CProjectFile(self,thinggy=None):
-		path = filedialog.askdirectory()
+		path = filedialog.askopenfilename(title="Select the CProject file for your project", filetypes=(("Project file",".cproject"),("All files","*.*")))
+		path = os.path.dirname(path)
+		#path = filedialog.askdirectory()
 		if len(path) and os.path.exists(path) :
 			if not os.path.exists(f"{path}/.cproject") :
 				messagebox.showerror("CProject not found","The .cproject file was not found in the given filder.\n"
@@ -98,7 +128,9 @@ class MainUI(Frame) :
 				self.params.cproject_path = f"{path}"
 
 	def browse_sool(self,thinggy=None):
-		path = filedialog.askdirectory()
+		path = filedialog.askopenfilename(title="Select the manifest of the sool distrib",
+										  filetypes=(("Manifest", "manifest.xml"), ("All files", "*.*")))
+		path = os.path.dirname(path)
 		if len(path) and os.path.exists(path) :
 			self.params.sool_path = path
 

@@ -1,0 +1,5 @@
+<module-manifest name="Demo">
+    <inc path="include"/>
+    <src path="src/added.cpp"/>
+    <define name="SOOL_DEFINE" value="1"/>
+</module-manifest>

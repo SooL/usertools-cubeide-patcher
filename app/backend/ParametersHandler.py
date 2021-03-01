@@ -1,6 +1,8 @@
 from tkinter import BooleanVar, StringVar, IntVar
 from configparser import ConfigParser
 import os
+import typing as T
+from .module_manifest import ModuleManifest
 
 class Parameters :
 	def __init__(self, master = None):
@@ -14,7 +16,8 @@ class Parameters :
 		self.var_sool_destination_path = StringVar(master,None)
 		self.var_sool_path = StringVar(master, None)
 		self.var_sool_chip = StringVar(master, None)
-		self.var_sool_module_path = StringVar(master, None)
+
+		self.modules_list : T.List[ModuleManifest] = list()
 
 		self.read_parameters()
 
@@ -41,7 +44,13 @@ class Parameters :
 		self.sool_destination_path = config_parser.get("Paths","SoolDestination", fallback="./sool")
 		self.sool_path = config_parser.get("Paths","SoolSource", fallback="")
 		self.sool_chip = config_parser.get("SooL","Chip", fallback="")
-		self.sool_module_path = config_parser.get("Paths","SoolModules", fallback="")
+		self.modules_list = [ModuleManifest(x) for x in config_parser.get("Paths","SoolModules", fallback="").split(";") if os.path.exists(x) and os.path.isfile(x)]
+
+		for module in self.modules_list :
+
+			module.read()
+
+
 
 	def write_parameters(self, path=os.path.dirname(os.path.abspath(__file__)) + "/config.ini"):
 		config_parser = ConfigParser()
@@ -63,7 +72,7 @@ class Parameters :
 		config_parser.set("Paths","SoolDestination", 	self.sool_destination_path)
 		config_parser.set("Paths","SoolSource", 		self.sool_path)
 		config_parser.set("SooL","Chip", 				self.sool_chip)
-		config_parser.set("Paths","SoolModules", 		self.sool_module_path)
+		config_parser.set("Paths","SoolModules", 		";".join([x.path for x in self.modules_list]))
 
 		with open(path,"w") as f :
 			config_parser.write(f)
@@ -144,14 +153,6 @@ class Parameters :
 	@sool_path.setter
 	def sool_path(self, val: str):
 		self.var_sool_path.set(val)
-
-	@property
-	def sool_module_path(self) -> str:
-		return self.var_sool_module_path.get()
-
-	@sool_module_path.setter
-	def sool_module_path(self, val: str):
-		self.var_sool_module_path.set(val)
 		
 	@property
 	def sool_chip(self) -> str:
