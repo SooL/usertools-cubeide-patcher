@@ -104,9 +104,12 @@ class CProject :
 		for configuration in self:
 			configuration.add_source_path(param, resolved)
 
-	def add_define(self, chip):
+	def add_define(self, name, val = None):
+		def_str = name
+		if val is not None and len(str(val).strip()) > 0:
+			def_str += f"={val}"
 		for configuration in self:
-			configuration.add_define(chip)
+			configuration.add_define(def_str)
 
 	def add_cdefine(self, chip):
 		for configuration in self:

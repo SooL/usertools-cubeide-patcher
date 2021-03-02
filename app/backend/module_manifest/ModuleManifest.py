@@ -7,10 +7,11 @@ class ModuleManifest:
 	def __init__(self, path : str):
 		self.include_paths : T.Set[str] = set()
 		self.source_paths : T.Set[str] = set()
-		self.includes: T.Dict[str,str] = dict()
+		self.defines: T.Dict[str, str] = dict()
 
 		self.path = path
 		self.root_path = os.path.dirname(path)
+		self.dirname = os.path.split(os.path.abspath(self.root_path))[-1]
 		self.name = None
 
 	def add_incdir(self, valid_incdir):
@@ -18,7 +19,7 @@ class ModuleManifest:
 		self.include_paths.add(p)
 
 	def add_include(self, inc : str, val = ""):
-		self.includes[inc] = val
+		self.defines[inc] = val
 
 
 	def get_relpath(self, path):
@@ -43,6 +44,6 @@ class ModuleManifest:
 				self.source_paths.add(path)
 		for e in root.findall("define") :
 			define = e.attrib["name"]
-			val = e.attrib["value"]
+			val = e.attrib["value"] if "value" in e.attrib else None
 			self.add_include(define,val)
 		pass

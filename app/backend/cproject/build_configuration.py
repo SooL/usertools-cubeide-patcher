@@ -111,7 +111,6 @@ class CProjectConfiguration :
 		self.add_cdefine(param)
 		self.add_cppdefine(param)
 
-
 	def add_cppdefine(self, param):
 		self.cppdefines.append(param)
 

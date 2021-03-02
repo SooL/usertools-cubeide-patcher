@@ -31,7 +31,7 @@ class ModuleManifest_Test(unittest.TestCase):
 	def test_read(self):
 		self.valid_modmanif.read()
 		self.assertIn("include",self.valid_modmanif.include_paths)
-		self.assertIn("src/added.cpp",self.valid_modmanif.source_paths)
+		self.assertIn("src",self.valid_modmanif.source_paths)
 
 if __name__ == '__main__':
 	unittest.main()

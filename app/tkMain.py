@@ -31,7 +31,7 @@ class MainUI(Frame) :
 		self.project_root = StringVar(self)
 		project_frame = LabelFrame(self,text="Project parameters")
 		project_root = BrowseField("Project folder : ",self.params.var_cproject_path,self.browse_CProjectFile,project_frame)
-		project_sool_path = LabeledInput("SooL destination : ", self.params.var_sool_destination_path,project_frame)
+		project_sool_path = LabeledInput("SooL destination: ", self.params.var_sool_destination_path,project_frame)
 		cleanup_debug_symbols_checkbox = Checkbutton(project_frame, text="Perform cleanup on debug symbols",variable=self.params.var_cleanup_debug_symbols)
 		use_links_checkbox = Checkbutton(project_frame, text="Use links instead of hardcopy", variable=self.params.var_use_links)
 		replace_main_checkbox = Checkbutton(project_frame, text="Replace \"main.c\" by a demo file \"main.cpp\"", variable=self.params.var_replace_main)
@@ -48,6 +48,7 @@ class MainUI(Frame) :
 		# Modules definitions
 		module_frame = LabelFrame(self,text="Modules")
 		label_module = Label(module_frame,text="Available modules")
+		module_destination = LabeledInput("Modules subdir: ",self.params.var_module_path,module_frame)
 		self.modules_lists = Listbox(module_frame,selectmode="multiple")
 		self.modules_lists.bind("<ButtonRelease-1>", self.on_module_select)
 		self.add_module_button = Button(module_frame,text="Register a new module",command=self.register_module)
@@ -68,6 +69,7 @@ class MainUI(Frame) :
 
 		#Module Packing
 		label_module.pack(fill=X,side=TOP)
+		module_destination.pack(fill=X,side=TOP)
 		self.modules_lists.pack(fill=X,side=TOP)
 		self.add_module_button.pack(fill=X,side=TOP)
 

@@ -16,8 +16,10 @@ class Parameters :
 		self.var_sool_destination_path = StringVar(master,None)
 		self.var_sool_path = StringVar(master, None)
 		self.var_sool_chip = StringVar(master, None)
+		self.var_module_path= StringVar(master,None)
 
 		self.modules_list : T.List[ModuleManifest] = list()
+		self.modules_selected_list : T.List[ModuleManifest] = list()
 
 		self.read_parameters()
 
@@ -33,9 +35,6 @@ class Parameters :
 		if os.path.exists(path) :
 			config_parser.read(path)
 
-		self.use_io_module = config_parser.getboolean("Modules","IO",fallback=False)
-		self.use_os_module = config_parser.getboolean("Modules","OS", fallback=False)
-
 		self.cleanup_debug_symbols = config_parser.getboolean("General","CleanupSymbols", fallback=True)
 		self.use_links = config_parser.getboolean("General","UseLinks",fallback=False)
 		self.replace_main = config_parser.getboolean("General","ReplaceMain",fallback=True)
@@ -43,6 +42,7 @@ class Parameters :
 		self.cproject_path = config_parser.get("Paths","CProject",fallback="")
 		self.sool_destination_path = config_parser.get("Paths","SoolDestination", fallback="./sool")
 		self.sool_path = config_parser.get("Paths","SoolSource", fallback="")
+		self.modules_destination_path = config_parser.get("Paths", "ModulesDestination", fallback="./modules")
 		self.sool_chip = config_parser.get("SooL","Chip", fallback="")
 		self.modules_list = [ModuleManifest(x) for x in config_parser.get("Paths","SoolModules", fallback="").split(";") if os.path.exists(x) and os.path.isfile(x)]
 		self.modules_selected_list = [ModuleManifest(x) for x in config_parser.get("Paths", "SoolModulesUsed", fallback="").split(";") if os.path.exists(x) and os.path.isfile(x)]
@@ -62,9 +62,6 @@ class Parameters :
 		config_parser.add_section("Paths")
 		config_parser.add_section("SooL")
 
-		config_parser.set("Modules","IO", 				str(self.use_io_module))
-		config_parser.set("Modules","OS", 				str(self.use_os_module))
-
 		config_parser.set("General","CleanupSymbols", 	str(self.cleanup_debug_symbols))
 		config_parser.set("General","UseLinks",			str(self.use_links))
 		config_parser.set("General","ReplaceMain",		str(self.replace_main))
@@ -76,6 +73,7 @@ class Parameters :
 		config_parser.set("SooL","Chip", 				self.sool_chip)
 		config_parser.set("Paths","SoolModules", 		";".join([x.path for x in self.modules_list]))
 		config_parser.set("Paths","SoolModulesUsed",	";".join([x.path for x in self.modules_selected_list]))
+		config_parser.set("Paths", "ModulesDestination", self.modules_destination_path)
 
 		with open(path,"w") as f :
 			config_parser.write(f)
@@ -164,3 +162,17 @@ class Parameters :
 	@sool_chip.setter
 	def sool_chip(self, val: str):
 		self.var_sool_chip.set(val)
+
+	@property
+	def modules_destination_path(self) -> str:
+		return self.var_module_path.get()
+
+	@modules_destination_path.setter
+	def modules_destination_path(self, val : str):
+		self.var_module_path.set(val)
+
+	def get_module_root_destination_path(self,module_name = None):
+		ret = f"{self.sool_destination_path}/{self.modules_destination_path}"
+		if module_name is not None :
+			ret += f"/{module_name}"
+		return ret

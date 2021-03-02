@@ -42,7 +42,7 @@ class Patcher():
 		print("\tLoading Project file")
 		self.project_file.load(f"{self.params.project_path}")
 
-	def handle_defines(self):
+	def handle_sool_defines(self):
 		print("Editing defines...")
 		if self.params.cleanup_debug_symbols :
 			print(f"\tSet chip to {self.params.sool_chip}")
@@ -50,6 +50,12 @@ class Patcher():
 			self.cproject_file.add_define(self.params.sool_chip)
 		else :
 			print("\tSkipped")
+
+	def add_modules_defines(self):
+		print("Adding modules defines...")
+		for module in self.params.modules_selected_list :
+			for define,val in module.defines.items() :
+				self.cproject_file.add_define(define,val)
 
 	def handle_sool(self):
 
@@ -70,7 +76,32 @@ class Patcher():
 			else:
 				raise FileExistsError()
 
-	def handle_includes_paths(self):
+	def handle_modules(self):
+		print("Adding some spicy modules...")
+		for module in self.params.modules_selected_list :
+			module_root = f"{self.params.project_sool_dir}/{self.params.modules_destination_path}"
+			module_dest = f"{module_root}/{module.dirname}"
+
+			if self.params.use_links :
+				print(f"\tAdd {module.name} to project ressources")
+				mod_ressource = ProjectRessource(module.root_path, module_dest)
+				if not mod_ressource.type == ProjectRessource.FOLDER:
+					raise RuntimeError()
+				self.project_file.add_resource(mod_ressource)
+			else :
+				if not os.path.exists(module_root):
+					print("\tCreating destination Module root directory")
+					os.makedirs(module_root)
+
+				if os.path.exists(module_dest):
+					print("\tOverwriting module...")
+					shutil.rmtree(module_dest)
+
+				print(f"\tCopying {module.name} into {module_dest}")
+				shutil.copytree(module.root_path,module_dest,dirs_exist_ok=True)
+
+
+	def handle_sool_includes_paths(self):
 		print("Rebuilding include tree...")
 		print("\tAdding include paths")
 		pattern = '"${{workspace_loc:/${{ProjName}}/{Base:s}/{SubPath:s}}}"'
@@ -78,7 +109,15 @@ class Patcher():
 		self.cproject_file.add_include(pattern.format(Base=self.params.sool_destination_path, SubPath="core/include"))
 		self.cproject_file.add_include(pattern.format(Base=self.params.sool_destination_path, SubPath="core/system/include"))
 
-	def handle_source_paths(self):
+	def handle_modules_includes_paths(self):
+		print("\tAdding modules include paths")
+		pattern = '"${{workspace_loc:/${{ProjName}}/{Base:s}/{Module:s}/{SubPath:s}}}"'
+		base_rep = f"{self.params.sool_destination_path}/{self.params.modules_destination_path}"
+		for module in self.params.modules_selected_list :
+			for inc in module.include_paths :
+				self.cproject_file.add_include(pattern.format(Base=base_rep,Module=module.dirname, SubPath=inc))
+
+	def handle_sool_source_paths(self):
 		print("Adding SooL to source tree...")
 		print("\tAdding source paths")
 		self.cproject_file.add_source_path(f"{self.params.sool_destination_path}",not self.params.use_links)
@@ -87,10 +126,15 @@ class Patcher():
 		print("Starting run...")
 		self.params.print()
 		self.init()
-		self.handle_defines()
+		self.handle_sool_defines()
 		self.handle_sool()
-		self.handle_includes_paths()
-		self.handle_source_paths()
+		self.handle_sool_includes_paths()
+		self.handle_sool_source_paths()
+
+		if len(self.params.modules_selected_list) > 0 :
+			self.handle_modules()
+			self.handle_modules_includes_paths()
+			self.add_modules_defines()
 
 		print("Writing destination file...")
 		self.cproject_file.save(self.params.cproject_path)
