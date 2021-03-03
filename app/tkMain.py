@@ -35,7 +35,7 @@ class MainUI(Frame) :
 		cleanup_debug_symbols_checkbox = Checkbutton(project_frame, text="Perform cleanup on debug symbols",variable=self.params.var_cleanup_debug_symbols)
 		use_links_checkbox = Checkbutton(project_frame, text="Use links instead of hardcopy", variable=self.params.var_use_links)
 		replace_main_checkbox = Checkbutton(project_frame, text="Replace \"main.c\" by a demo file \"main.cpp\"", variable=self.params.var_replace_main)
-
+		keep_git_checkbox = Checkbutton(project_frame, text="Keep .git folders", variable=self.params.var_keep_git)
 		sool_frame = LabelFrame(self,text="SooL parameters")
 		sool_root = BrowseField("Sool Root : ",self.params.var_sool_path,self.browse_sool,sool_frame, on_edit=self.on_sool_path_change)
 
@@ -49,6 +49,7 @@ class MainUI(Frame) :
 		module_frame = LabelFrame(self,text="Modules")
 		label_module = Label(module_frame,text="Available modules")
 		module_destination = LabeledInput("Modules subdir: ",self.params.var_module_path,module_frame)
+
 		self.modules_lists = Listbox(module_frame,selectmode="multiple")
 		self.modules_lists.bind("<ButtonRelease-1>", self.on_module_select)
 		self.add_module_button = Button(module_frame,text="Register a new module",command=self.register_module)
@@ -60,7 +61,7 @@ class MainUI(Frame) :
 		cleanup_debug_symbols_checkbox.pack(expand=TRUE,fill=X, side=TOP)
 		use_links_checkbox.pack(expand=TRUE,fill=X, side=TOP)
 		replace_main_checkbox.pack(expand=TRUE, fill=X, side=TOP)
-
+		keep_git_checkbox.pack(fill=X, side=TOP)
 		#Sool Packing
 		sool_root.pack(fill=X,side=TOP)
 		self.sool_chip_treeview.pack(fill=BOTH,side=TOP,expand=TRUE)
@@ -68,10 +69,13 @@ class MainUI(Frame) :
 		# generate_unified_includes_checkbox.pack(fill=X,side=TOP)
 
 		#Module Packing
-		label_module.pack(fill=X,side=TOP)
+
 		module_destination.pack(fill=X,side=TOP)
+
+		label_module.pack(fill=X, side=TOP)
+		self.add_module_button.pack(fill=X, side=TOP)
 		self.modules_lists.pack(fill=X,side=TOP)
-		self.add_module_button.pack(fill=X,side=TOP)
+
 
 		project_frame.grid(row=0,sticky="new")
 		sool_frame.grid(row=1,sticky="nsew")

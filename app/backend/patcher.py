@@ -72,7 +72,11 @@ class Patcher():
 				os.makedirs(os.path.dirname(self.params.project_sool_dir))
 			if not os.path.exists(self.params.project_sool_dir) :
 				print(f"\tCopying sool into {self.params.project_sool_dir}")
-				shutil.copytree(self.params.sool_path,self.params.project_sool_dir)
+				if not self.params.keep_git :
+					shutil.copytree(self.params.sool_path,self.params.project_sool_dir,ignore= shutil.ignore_patterns(".git"))
+				else :
+					shutil.copytree(self.params.sool_path, self.params.project_sool_dir)
+
 			else:
 				raise FileExistsError()
 
@@ -98,7 +102,10 @@ class Patcher():
 					shutil.rmtree(module_dest)
 
 				print(f"\tCopying {module.name} into {module_dest}")
-				shutil.copytree(module.root_path,module_dest,dirs_exist_ok=True)
+				if self.params.keep_git :
+					shutil.copytree(module.root_path, module_dest, dirs_exist_ok=True)
+				else :
+					shutil.copytree(module.root_path,module_dest,dirs_exist_ok=True,ignore=shutil.ignore_patterns(".git"))
 
 
 	def handle_sool_includes_paths(self):

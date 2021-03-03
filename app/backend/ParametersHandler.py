@@ -6,8 +6,8 @@ from .module_manifest import ModuleManifest
 
 class Parameters :
 	def __init__(self, master = None):
-		self.var_use_io_module = BooleanVar(master,False)
-		self.var_use_os_module = BooleanVar(master,False)
+		self.var_keep_git = BooleanVar(master, False)
+
 		self.var_cleanup_debug_symbols = BooleanVar(master,True)
 		self.var_use_links = BooleanVar(master,False)
 		self.var_replace_main = BooleanVar(master,False)
@@ -29,6 +29,7 @@ class Parameters :
 		print("Sool dest path : ", self.sool_destination_path)
 		print("SooL      path : ", self.sool_path)
 		print("SooL Chip      : ", self.sool_chip)
+		print("Used modules   : " + "\n               : ".join([x.name for x in self.modules_selected_list]))
 
 	def read_parameters(self,path = os.path.dirname(os.path.abspath(__file__)) + "/config.ini"):
 		config_parser = ConfigParser()
@@ -38,6 +39,7 @@ class Parameters :
 		self.cleanup_debug_symbols = config_parser.getboolean("General","CleanupSymbols", fallback=True)
 		self.use_links = config_parser.getboolean("General","UseLinks",fallback=False)
 		self.replace_main = config_parser.getboolean("General","ReplaceMain",fallback=True)
+		self.keep_git = config_parser.getboolean("General", "KeepGit", fallback=False)
 
 		self.cproject_path = config_parser.get("Paths","CProject",fallback="")
 		self.sool_destination_path = config_parser.get("Paths","SoolDestination", fallback="./sool")
@@ -65,6 +67,7 @@ class Parameters :
 		config_parser.set("General","CleanupSymbols", 	str(self.cleanup_debug_symbols))
 		config_parser.set("General","UseLinks",			str(self.use_links))
 		config_parser.set("General","ReplaceMain",		str(self.replace_main))
+		config_parser.set("General", "KeepGit", 		str(self.keep_git))
 
 		config_parser.set("Paths","CProject",			self.var_cproject_path.get())
 
@@ -87,22 +90,6 @@ class Parameters :
 		return os.path.abspath(f"{self.project_dir}/{self.sool_destination_path}")
 
 	@property
-	def use_io_module(self) -> bool:
-		return self.var_use_io_module.get()
-
-	@use_io_module.setter
-	def use_io_module(self,val : bool):
-		self.var_use_io_module.set(val)
-		
-	@property
-	def use_os_module(self) -> bool:
-		return self.var_use_os_module.get()
-
-	@use_os_module.setter
-	def use_os_module(self,val : bool):
-		self.var_use_os_module.set(val)
-
-	@property
 	def use_links(self) -> bool:
 		return self.var_use_links.get()
 
@@ -117,6 +104,15 @@ class Parameters :
 	@cleanup_debug_symbols.setter
 	def cleanup_debug_symbols(self,val : bool):
 		self.var_cleanup_debug_symbols.set(val)
+
+	@property
+	def keep_git(self) -> bool:
+		return self.var_keep_git.get()
+
+	@keep_git.setter
+	def keep_git(self,val : bool):
+		self.var_keep_git.set(val)
+
 
 	@property
 	def replace_main(self) -> bool:
